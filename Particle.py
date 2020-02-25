@@ -16,7 +16,7 @@ class Particle:
     #G=6.67408E-11
     G=scipy.constants.G
 
-    def __init__(self, Position=np.array([0,0,0], dtype=float), Velocity=np.array([0,0,0], dtype=float), Acceleration=np.array([0,-10,0], dtype=float), Name='Ball', Mass=1.0):
+    def __init__(self, Position=np.array([0,0], dtype=float), Velocity=np.array([0,0], dtype=float), Acceleration=np.array([0,-10], dtype=float), Name='Ball', Mass=1.0):
         self.Name = Name
         self.position = np.array(Position,dtype=float)
         self.velocity = np.array(Velocity,dtype=float)
