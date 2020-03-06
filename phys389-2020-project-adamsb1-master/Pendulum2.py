@@ -43,6 +43,8 @@ class Pendulum(Particle):
             self.update_cromer(deltaT)
         elif update_method == 3:
             self.update_richardson(deltaT)
+        elif update_method == 4:
+            self.update_runge_kutter(deltaT)
         
         self.tot_energy, self.kin_energy, self.pot_energy = self.calculate_E()
         
@@ -107,3 +109,65 @@ class Pendulum(Particle):
         self.ang_acceleration[2] = self.damped_sho(self.angle, self.ang_velocity)
         self.angle += ang_velocity_mid * deltaT
         self.ang_velocity[2] += ang_acceleration_mid * deltaT
+
+    def update_runge_kutter(self, deltaT):
+        #i hate this method
+        k_ang = [0.0]*4
+        k_vel = [0.0]*4
+        k_acc = [0.0]*4
+        print('k_ang' , k_ang)
+        i=0
+        while i < 4:
+            print(i)
+             
+            angle = self.angle
+            velocity = self.ang_velocity
+            acceleration = self.ang_acceleration
+            if i == 0:
+               
+
+                #RK: k_1 = deltaT * f(x,y,z)
+                #RK: k_2 = deltaT * f(x + k_1_x/2, y + k_1_y/2, y + k_1_z/2)
+                #RK: k_3 = deltaT * f(x + k_2_x/2, y + k_2_y/2, y + k_2_z/2)
+                #RK: k_4 = deltaT * f(x + k_3_x, y + k_3_y, y + k_3_z)
+
+
+
+                k_ang[i], k_vel[i], k_acc[i] = (self.calc_k(angle, velocity, np.array(acceleration), deltaT))               #acceleration=np.array([0.,0.,0.], dtype=float)
+            elif i ==1 or i == 2:
+
+                k_ang[i], k_vel[i], k_acc[i] = self.calc_k( angle = (angle + k_ang[i-1]/2) , velocity = np.array([0.0,0.0,velocity[2] + (k_vel[i-1]/2)]), acceleration = np.array([0.0,0.0,acceleration[2] + (k_acc[i-1]/2)]), deltaT = (deltaT/2)) 
+            else:
+                k_ang[i], k_vel[i], k_acc[i] = self.calc_k( (angle + k_ang[i-1]) , velocity = np.array([0.0,0.0,velocity[2] + (k_vel[i-1])]), acceleration =  np.array([0.0,0.0,acceleration[2] + (k_acc[i-1])]), deltaT =deltaT ) 
+
+            i+=1
+        print('inital angle', self.angle)
+       
+        self.ang_acceleration[2] = self.damped_sho(self.angle, self.ang_velocity) + ((k_acc[0] + (2*k_acc[1]) + (2*k_acc[2]) + k_acc[3]) *deltaT) / 6
+
+        delta_vel = k_vel[0] *deltaT + (2.*k_vel[1])*deltaT + (2.*k_vel[2])*deltaT + k_vel[3]*deltaT
+        delta_vel =delta_vel/ 6.
+
+        self.angle += (delta_vel) 
+        #((k_vel[0] + (2*k_vel[1]) + (2*k_vel[2]) + k_vel[3]) *deltaT) / 6
+
+        delta_acc = k_acc[0] *deltaT + (2*k_acc[1])*deltaT + (2*k_acc[2])*deltaT + k_acc[3]*deltaT
+        delta_acc =delta_acc/ 6.
+
+
+        self.ang_velocity[2] += (delta_acc )
+        #((k_acc[0] + (2*k_acc[1]) + (2*k_acc[2]) + k_acc[3]) *deltaT) / 6
+
+
+
+        print('angle' , self.angle)
+        print('k_ang' , k_ang)
+
+
+    def calc_k(self, angle, velocity, acceleration, deltaT):
+        acceleration[2] = self.damped_sho(angle, velocity)         #change in acc
+        angle = velocity[2] * deltaT   
+                                 #change in angle
+        velocity = acceleration[2] * deltaT                        #change in vel
+
+        return angle, velocity, acceleration

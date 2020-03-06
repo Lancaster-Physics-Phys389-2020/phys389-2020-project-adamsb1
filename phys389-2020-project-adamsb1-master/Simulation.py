@@ -7,22 +7,22 @@ import matplotlib.pyplot as plt
 import pandas as pd 
 import copy
 
-deltaT = 0.001
+deltaT = 0.01
 T = 0
-endT = 100
+endT = 10
 
 
 
 
 
-df = 0.025
+df = 0.0
 
 
                     # position          velocity        acceleration name   mass    theta          length  OMEGA    alpha E KE PE, damping factor
 pend_ball_current = Pendulum(np.array([-4.,-3.,0]),np.array([0.,0,0]),np.array([0,0,0]),'ball', 1, scipy.constants.pi/2, 1., [0.,0.,0.], [0.,0.,0.], [0.,0.,0.], 0.0, 0.0, 0.0, df )
 total_data = []
 
-update_method = 3               #1-euler, 2-cromer, 3-richardson
+update_method = 4               #1-euler, 2-cromer, 3-richardson, 4 = runge kutter
 x=0
 while T <= endT:
     T += deltaT
@@ -39,5 +39,5 @@ while T <= endT:
 
 df = pd.DataFrame(data = total_data, columns = ['mass','position','velocity','acceleration','angle','length','angular_velocity','angular_acceleration', 'time', 'tot_energy', 'kin_energy', 'pot_energy', 'damping_factor'])
 #print(df['mass'][3])
-df.to_pickle('Pendulum_r_0.025.csv')
+df.to_pickle('Pendulum_rk.csv')
 print('done')
