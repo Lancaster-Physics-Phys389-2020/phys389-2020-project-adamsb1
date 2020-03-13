@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import pandas as pd 
 import copy
 
-deltaT = 0.001
+deltaT = 0.01
 T = 0
 endT = 100
 
@@ -15,7 +15,7 @@ endT = 100
 
 
 
-df = 0.025
+df = 0.00
 
 
                     # position          velocity        acceleration name   mass    theta          length  OMEGA    alpha E KE PE, damping factor
@@ -39,5 +39,5 @@ while T <= endT:
 
 df = pd.DataFrame(data = total_data, columns = ['mass','position','velocity','acceleration','angle','length','angular_velocity','angular_acceleration', 'time', 'tot_energy', 'kin_energy', 'pot_energy', 'damping_factor'])
 #print(df['mass'][3])
-df.to_pickle('Pendulum_r_0.025.csv')
+df.to_pickle('Pendulum_RK.csv')
 print('done')

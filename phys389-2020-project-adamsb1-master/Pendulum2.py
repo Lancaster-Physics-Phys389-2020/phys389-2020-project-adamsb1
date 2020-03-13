@@ -107,3 +107,26 @@ class Pendulum(Particle):
         self.ang_acceleration[2] = self.damped_sho(self.angle, self.ang_velocity)
         self.angle += ang_velocity_mid * deltaT
         self.ang_velocity[2] += ang_acceleration_mid * deltaT
+
+    def update_RK(self, deltaT):
+        self.ang_acceleration[2] = self.damped_sho(self.angle, self.ang_velocity)
+
+        k_a = []        #pos
+        k_b = []        #vel
+
+        k_a[0] = self.velocity[2] * deltaT
+        k_b[0] = (self.ang_acceleration[2] *deltaT) *deltaT
+
+        k_a[1] = (self.velocity[2] + k_b[0]/2) * deltaT
+        k_b[1] = (self.ang_acceleration[2] *(deltaT/2.)) *deltaT 
+
+        k_a[2] = (self.velocity[2] + k_b[1]/2) * deltaT
+        k_b[1] = (self.ang_acceleration[2] *(deltaT/2.)) *deltaT 
+
+        k_a[3] = (self.velocity[2] + k_b[2]) * deltaT
+        k_b[1] = (self.ang_acceleration[2] *(deltaT + deltaT)) *deltaT 
+
+
+
+        self.ang_velocity[2] += ((k_b[0] + k_b[1] + k_b[2] + k_b[3])/6.)
+        self.angle += ((k_a[0] + k_a[1] + k_a[2] + k_a[3])/6.)
