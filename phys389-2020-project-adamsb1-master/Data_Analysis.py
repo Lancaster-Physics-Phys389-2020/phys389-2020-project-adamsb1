@@ -24,6 +24,8 @@ data1 = pd.read_pickle(r'Pendulum_RK.csv')
 #data3 = pd.read_pickle(r'Pendulum_c.csv')
 
 plt.plot([data1['position'][i][0] for i in range(len(data1['position']))], [data1['position'][i][1] for i in range(len(data1['position']))], 'red', label = 'position r')
+#plt.plot( data1['time'],[data1['velocity'][i][2] for i in range(len(data1['velocity']))], 'blue', label = 'euler')
+
 #plt.plot([data2['position'][i][0] for i in range(len(data2['position']))], [data2['position'][i][1] for i in range(len(data2['position']))], 'blue', label = 'position e')
 #plt.plot([data3['position'][i][0] for i in range(len(data3['position']))], [data3['position'][i][1] for i in range(len(data3['position']))], 'green', label = 'position c')
 plt.legend()

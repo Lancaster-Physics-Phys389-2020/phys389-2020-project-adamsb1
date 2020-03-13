@@ -7,9 +7,9 @@ import matplotlib.pyplot as plt
 import pandas as pd 
 import copy
 
-deltaT = 0.01
+deltaT = 0.001
 T = 0
-endT = 100
+endT = 10
 
 
 
@@ -22,7 +22,7 @@ df = 0.00
 pend_ball_current = Pendulum(np.array([-4.,-3.,0]),np.array([0.,0,0]),np.array([0,0,0]),'ball', 1, scipy.constants.pi/2, 1., [0.,0.,0.], [0.,0.,0.], [0.,0.,0.], 0.0, 0.0, 0.0, df )
 total_data = []
 
-update_method = 3               #1-euler, 2-cromer, 3-richardson
+update_method = 4              #1-euler, 2-cromer, 3-richardson, 4 = RK
 x=0
 while T <= endT:
     T += deltaT
