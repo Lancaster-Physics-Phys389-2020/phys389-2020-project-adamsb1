@@ -60,8 +60,8 @@ class Pendulum(Particle):
     def pol_to_cart(self):
         delta_x = self.length * np.cos(self.angle - sp.pi/2)
         delta_y = self.length * np.sin(self.angle - sp.pi/2)
-        x = delta_x - self.origin_point[0]
-        y = delta_y - self.origin_point[1]
+        x = delta_x + self.origin_point[0]
+        y = delta_y + self.origin_point[1]
         return x , y
 
     def damped_sho(self, angle, ang_velocity):   
@@ -148,12 +148,8 @@ class Pendulum(Particle):
 
     def determine_acc_method(self, angle, ang_velocity, n_pendulums, P, mass, vel, l, ang):
         if n_pendulums == 2:    
-            print('doing right update')    
             ang_acc = self.double_pendulum_acc(angle, ang_velocity, P, mass, vel, l, ang)
         else:
-            print()
-            print('dam it')
-            print()
             ang_acc = self.damped_sho(angle, ang_velocity)
         return ang_acc
 

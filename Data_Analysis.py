@@ -19,13 +19,13 @@ import matplotlib.pyplot as plt
 #plt.show()
 
 
-data1 = pd.read_pickle(r'Pendulum_RK_1.csv')
+data1 = pd.read_pickle(r'Pendulum_Cromer_std.csv')
 #data2 = pd.read_pickle(r'Pendulum_e.csv')
 #data3 = pd.read_pickle(r'Pendulum_c.csv')
 
 plt.plot([data1['position'][i][0] for i in range(len(data1['position']))], [data1['position'][i][1] for i in range(len(data1['position']))], 'blue', label = 'position r')
 
-data2 = pd.read_pickle(r'Pendulum_RK_2.csv')
+#data2 = pd.read_pickle(r'Pendulum_RK_2.csv')
 
 #plt.plot([data2['position'][i][0] for i in range(len(data1['position']))], [data2['position'][i][1] for i in range(len(data1['position']))], 'red', label = 'position r')
 plt.legend()

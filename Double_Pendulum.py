@@ -52,26 +52,31 @@ class DoublePendulum(Pendulum):
             else:
                 self.pendulums[0].update(deltaT,method, n_pendulums, P, mass, vel, l, ang)
             pendulums_data = copy.deepcopy(self.pendulums)
-            print(time)
-            i = 0
-            while i < 2:
-                if i == 0:
-                    total_data1.append([pendulums_data[i].mass, pendulums_data[i].position ,pendulums_data[i].velocity ,pendulums_data[i].acceleration, pendulums_data[i].angle, pendulums_data[i].length, pendulums_data[i].ang_velocity, pendulums_data[i].ang_acceleration, time,  pendulums_data[i].tot_energy, pendulums_data[i].kin_energy, pendulums_data[i].pot_energy, pendulums_data[i].damping_factor ])
-                elif i == 1:
-                    if n_pendulums>1:
-                     total_data2.append([pendulums_data[i].mass, pendulums_data[i].position ,pendulums_data[i].velocity ,pendulums_data[i].acceleration, pendulums_data[i].angle, pendulums_data[i].length, pendulums_data[i].ang_velocity, pendulums_data[i].ang_acceleration, time,  pendulums_data[i].tot_energy, pendulums_data[i].kin_energy, pendulums_data[i].pot_energy, pendulums_data[i].damping_factor ])
-                i+=1
+           
 
+            if (time//(deltaT*1000))%1 == 0 or time == 0:     #Saves the data to the lists: 'item' and 'item2' every 1000 time-steps. Reduces amount of data collected without reducing accuracy of data.
+                i = 0
+                while i < 2:
+                    if i == 0:
+                        total_data1.append(copy.deepcopy([pendulums_data[i].mass, pendulums_data[i].position ,pendulums_data[i].velocity ,pendulums_data[i].acceleration, pendulums_data[i].angle, pendulums_data[i].length, pendulums_data[i].ang_velocity, pendulums_data[i].ang_acceleration, time,  pendulums_data[i].tot_energy, pendulums_data[i].kin_energy, pendulums_data[i].pot_energy, pendulums_data[i].damping_factor ]))
+                    elif i == 1:
+                        if n_pendulums>1:
+                            total_data2.append([pendulums_data[i].mass, pendulums_data[i].position ,pendulums_data[i].velocity ,pendulums_data[i].acceleration, pendulums_data[i].angle, pendulums_data[i].length, pendulums_data[i].ang_velocity, pendulums_data[i].ang_acceleration, time,  pendulums_data[i].tot_energy, pendulums_data[i].kin_energy, pendulums_data[i].pot_energy, pendulums_data[i].damping_factor ])
+                    i+=1
+                print(time)
             time+=deltaT
-
-
-
-
         df = pd.DataFrame(data = total_data1, columns = ['mass','position','velocity','acceleration','angle','length','angular_velocity','angular_acceleration', 'time', 'tot_energy', 'kin_energy', 'pot_energy', 'damping_factor'])
-        df.to_pickle('Pendulum_RK_1.csv')
+        df.to_pickle('Pendulum_RK_0.5.csv')
+        if n_pendulums > 1:
+            df = pd.DataFrame(data = total_data2, columns = ['mass','position','velocity','acceleration','angle','length','angular_velocity','angular_acceleration', 'time', 'tot_energy', 'kin_energy', 'pot_energy', 'damping_factor'])
+            df.to_pickle('Pendulum_RK_2.csv')
 
-        df = pd.DataFrame(data = total_data2, columns = ['mass','position','velocity','acceleration','angle','length','angular_velocity','angular_acceleration', 'time', 'tot_energy', 'kin_energy', 'pot_energy', 'damping_factor'])
-        df.to_pickle('Pendulum_RK_2.csv')
+            
+
+
+
+
+
 
 
 
