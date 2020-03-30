@@ -18,13 +18,13 @@ import pandas as pd
 #################
 #import data
 euler_std = pd.read_pickle(r'Pendulum_Euler_std.csv')
-euler_05 = pd.read_pickle(r'Pendulum_Euler_0.05.csv')
+euler_01 = pd.read_pickle(r'Pendulum_Euler_0.01.csv')
 
 cromer_std = pd.read_pickle(r'Pendulum_Cromer_std.csv')
-cromer_05 = pd.read_pickle(r'Pendulum_Cromer_0.05.csv')
+cromer_01 = pd.read_pickle(r'Pendulum_Cromer_0.01.csv')
 
 richardson_std = pd.read_pickle(r'Pendulum_Richardson_std.csv')
-richardson_05 = pd.read_pickle(r'Pendulum_Richardson_0.05.csv')
+richardson_01 = pd.read_pickle(r'Pendulum_Richardson_0.01.csv')
 
 rk_std = pd.read_pickle(r'Pendulum_RK_std.csv')
 rk_005 = pd.read_pickle(r'Pendulum_RK_0.005.csv')
@@ -97,21 +97,23 @@ plt.plot(x2,y2, 'green', label = 'Euler-Cromer')
 plt.plot(x3,y3, 'maroon', label = 'Euler-Richardson')
 plt.plot(x4,y4, 'yellow', label = 'Runge-Kutta')
 
-plt.ylabel('log(Error in total energy [J])')
-plt.xlabel('Time [s]')
-plt.legend()
-plt.savefig('Method_comparison.pdf')
+plt.ylabel('log(Error in total energy [J])', size =20)
+plt.xlabel('Time [s]', size = 20)
+plt.legend(prop = {'size':14})
+plt.savefig('Method_comparison8.pdf')
 
 ################
+
+
 
 ###############
 #Euler
 plt.figure(figsize = [8.0,8.0])
 plt.plot(x1,y1, 'blue', label = 'Euler')
-plt.ylabel('log(Error in total energy [J])')
-plt.xlabel('Time [s]')
-plt.legend()
-plt.savefig('Euler_energy_err.pdf')
+plt.ylabel('log(Error in total energy [J])', size =20)
+plt.xlabel('Time [s]', size =20)
+plt.legend(prop = {'size':14})
+plt.savefig('Euler_energy_err3.pdf')
 plt.close()
 ################
 
@@ -119,10 +121,10 @@ plt.close()
 #Cromer
 plt.figure(figsize = [8.0,8.0])
 plt.plot(x2,y2, 'green', label = 'Euler-Cromer')
-plt.ylabel('log(Error in total energy [J])')
-plt.xlabel('Time [s]')
-plt.legend()
-plt.savefig('Cromer_energy_err.pdf')
+plt.ylabel('log(Error in total energy [J])', size =20)
+plt.xlabel('Time [s]', size =20)
+plt.legend(prop = {'size':14})
+plt.savefig('Cromer_energy_err3.pdf')
 plt.close()
 ################
 
@@ -130,10 +132,10 @@ plt.close()
 #Richardson
 plt.figure(figsize = [8.0,8.0])
 plt.plot(x3,y3, 'maroon', label = 'Euler-Richardson')
-plt.ylabel('log(Error in total energy [J])')
-plt.xlabel('Time [s]')
-plt.legend()
-plt.savefig('Richardson_energy_err.pdf')
+plt.ylabel('log(Error in total energy [J])', size =20)
+plt.xlabel('Time [s]', size =20)
+plt.legend(prop = {'size':14})
+plt.savefig('Richardson_energy_err3.pdf')
 plt.close()
 ################
 
@@ -141,10 +143,10 @@ plt.close()
 #RK
 plt.figure(figsize = [8.0,8.0])
 plt.plot(x4,y4, 'yellow', label = 'Runge-Kutta')
-plt.ylabel('log(Error in total energy [J])')
-plt.xlabel('Time [s]')
-plt.legend()
-plt.savefig('RK_energy_err.pdf')
+plt.ylabel('log(Error in total energy [J])', size =20)
+plt.xlabel('Time [s]', size =20)
+plt.legend(prop = {'size':14})
+plt.savefig('RK_energy_err3.pdf')
 plt.close()
 ################
 
@@ -154,53 +156,53 @@ plt.close()
 
 ############
 plt.figure(figsize = [8.0,8.0])
-plt.plot(euler_05['time'],euler_05['tot_energy'], 'blue', label = 'Euler')
-plt.plot(cromer_05['time'],cromer_05['tot_energy'], 'green', label = 'Euler-Cromer')
-plt.plot(richardson_05['time'],richardson_05['tot_energy'], 'maroon', label = 'Euler-Richardson')
-plt.plot(rk_05['time'],rk_05['tot_energy'], 'yellow', label = 'Runge-Kutta')
+plt.plot(euler_01['time'],euler_01['tot_energy'], 'blue', label = 'Euler')
+plt.plot(cromer_01['time'],cromer_01['tot_energy'], 'green', label = 'Euler-Cromer')
+plt.plot(richardson_01['time'],richardson_01['tot_energy'], 'maroon', label = 'Euler-Richardson')
+plt.plot(rk_01['time'],rk_01['tot_energy'], 'yellow', label = 'Runge-Kutta')
 
-plt.ylabel('Total energy [J]')
-plt.xlabel('Time [s]')
-plt.legend()
-plt.savefig('Method_damped_comparison1.pdf')
+plt.ylabel('Total energy [J]', size =20)
+plt.xlabel('Time [s]', size =20)
+plt.legend(prop = {'size':14})
+plt.savefig('Method_damped_comparison3.pdf')
 plt.close()
 ############
 
 #######
 #RK
 plt.figure(figsize = [8.0,8.0])
-plt.plot(rk_05['time'],rk_05['tot_energy'], 'yellow', label = 'Runge-Kutta')
-plt.ylabel('Total energy [J]')
-plt.xlabel('Time [s]')
-plt.legend()
-plt.savefig('RK_energy_damped.pdf')
+plt.plot(rk_01['time'],rk_01['tot_energy'], 'yellow', label = 'Runge-Kutta')
+plt.ylabel('Total energy [J]', size =20)
+plt.xlabel('Time [s]', size =20)
+plt.legend(prop = {'size':14})
+plt.savefig('RK_energy_damped3.pdf')
 plt.close()
 
 #Richardson
 plt.figure(figsize = [8.0,8.0])
-plt.plot(richardson_05['time'],richardson_05['tot_energy'], 'maroon', label = 'Euler-Richardson')
-plt.ylabel('Total energy [J]')
-plt.xlabel('Time [s]')
-plt.legend()
-plt.savefig('Richardson_energy_damped.pdf')
+plt.plot(richardson_01['time'],richardson_01['tot_energy'], 'maroon', label = 'Euler-Richardson')
+plt.ylabel('Total energy [J]', size =20)
+plt.xlabel('Time [s]', size =20)
+plt.legend(prop = {'size':14})
+plt.savefig('Richardson_energy_damped3.pdf')
 plt.close()
 
 #Cromer
 plt.figure(figsize = [8.0,8.0])
-plt.plot(cromer_05['time'],cromer_05['tot_energy'], 'green', label = 'Euler-Cromer')
-plt.ylabel('Total energy [J]')
-plt.xlabel('Time [s]')
-plt.legend()
-plt.savefig('Cromer_energy_damped.pdf')
+plt.plot(cromer_01['time'],cromer_01['tot_energy'], 'green', label = 'Euler-Cromer')
+plt.ylabel('Total energy [J]', size =20)
+plt.xlabel('Time [s]', size =20)
+plt.legend(prop = {'size':14})
+plt.savefig('Cromer_energy_damped3.pdf')
 plt.close()
 
 #euler
 plt.figure(figsize = [8.0,8.0])
-plt.plot(euler_05['time'],euler_05['tot_energy'], 'blue', label = 'Euler')
-plt.ylabel('Total energy [J]')
-plt.xlabel('Time [s]')
-plt.legend()
-plt.savefig('euler_energy_damped.pdf')
+plt.plot(euler_01['time'],euler_01['tot_energy'], 'blue', label = 'Euler')
+plt.ylabel('Total energy [J]', size =20)
+plt.xlabel('Time [s]', size =20)
+plt.legend(prop = {'size':14})
+plt.savefig('euler_energy_damped3.pdf')
 plt.close()
 
 #########
@@ -210,17 +212,17 @@ plt.close()
 #compare amount of damping
 
 plt.figure(figsize = [8.0,8.0])
-plt.plot(rk_05['time'],rk_05['tot_energy'], 'yellow', label = 'Damping: 0.05')
-plt.plot(rk_01['time'],rk_01['tot_energy'], 'blue', label = 'Damping: 0.01')
 plt.plot(rk_005['time'],rk_005['tot_energy'], 'red', label = 'Damping: 0.005')
+plt.plot(rk_01['time'],rk_01['tot_energy'], 'blue', label = 'Damping: 0.01')
+plt.plot(rk_05['time'],rk_05['tot_energy'], 'yellow', label = 'Damping: 0.05')
 plt.plot(rk_1['time'],rk_1['tot_energy'], 'green', label = 'Damping: 0.1')
 plt.plot(rk_25['time'],rk_25['tot_energy'], 'c', label = 'Damping: 0.25')
 plt.plot(rk_5['time'],rk_5['tot_energy'], 'k', label = 'Damping: 0.5')
 
-plt.ylabel('Total energy [J]')
-plt.xlabel('Time [s]')
-plt.legend()
-plt.savefig('RK_energy_damped_compare.pdf')
+plt.ylabel('Total energy [J]', size =20)
+plt.xlabel('Time [s]', size =20)
+plt.legend(prop = {'size':14})
+plt.savefig('RK_energy_damped_compare3.pdf')
 plt.close()
 
 
