@@ -11,7 +11,7 @@ class Pendulum(Particle):
     Calculates all data required to analyse system (including: position (cartesian and polar), kinetic energy, potential energy and total energy).
     Also contains acceleration methods necessary for boht single and double pendulum systems.
     '''
-    def __init__(self, position=np.array([0,0,0], dtype=float), velocity=np.array([0,0,0], dtype=float), acceleration=np.array([0.,0.,0.], dtype=float), name='Ball', mass=1.0, angle = 0.0, length = 0.0, ang_velocity =np.array([ 0.,0.,0.], dtype=float), ang_acceleration = np.array([0.,0.,0.], dtype=float), origin_point = np.array([0.,0.,0.], dtype = float) , tot_energy = 0.0, kin_energy = 0.0, pot_energy = 0.0, damping_factor= 0.0  ):
+    def __init__(self, position=np.array([0,0,0], dtype=float), velocity=np.array([0,0,0], dtype=float), acceleration=np.array([0.,0.,0.], dtype=float), name='Ball', mass=1.0, angle = 0.0, length = 0.0, ang_velocity =np.array([ 0.,0.,0.], dtype=float), ang_acceleration = np.array([0.,0.,0.], dtype=float), origin_point = np.array([0.,0.,0.], dtype = float) , tot_energy = 0.0, kin_energy = 0.0, pot_energy = 0.0, damping_factor= 0.0, flipped = 'no' ):
         '''
         Constructor class for the program
         Creates a new 'Pendulum' instance, such that an object can inherit this class' properties.
@@ -21,14 +21,22 @@ class Pendulum(Particle):
         '''
         super().__init__(position , velocity, acceleration,name, mass)      #Inherits the properrties from the 'Particle' class.
         self.origin_point = origin_point
-        self.length , self.angle = self.cart_to_pol_position()
-        self.ang_velocity =[0.0, 0.0, (np.linalg.norm(self.velocity)) / self.length]                #Calculates all the initial properties of the new 'Pendulum' object, given the initial values. 
+        if position[0] == 0. and position[1] == 0.0:
+            self.length = length
+            self.angle = angle
+        else:
+            self.length , self.angle = self.cart_to_pol_position()
+        if velocity[0] != 0 and velocity[1] != 0:
+            self.ang_velocity =[0.0, 0.0, (np.linalg.norm(self.velocity)) / self.length]                #Calculates all the initial properties of the new 'Pendulum' object, given the initial values. 
+        else:
+            self.ang_velocity = ang_velocity
         self.ang_acceleration = [0.0,0.0, 0.0] 
         self.damping_factor = damping_factor
         self.tot_energy , self.kin_energy, self.pot_energy = self.calculate_E()
+        self.flipped = flipped
     
     def __repr__(self):
-        return '{0:12.3e},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10}'.format(self.mass,self.position, self.velocity,self.acceleration,self.angle,self.length, self.ang_velocity, self.ang_acceleration, self.tot_energy, self.kin_energy, self.pot_energy)
+        return '{0:12.3e},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12}'.format(self.mass,self.position, self.velocity,self.acceleration,self.angle,self.length, self.ang_velocity, self.ang_acceleration, self.tot_energy, self.kin_energy, self.pot_energy, self.damping_factor, self.flipped)
 
     def cart_to_pol_position(self):
         '''
@@ -53,6 +61,10 @@ class Pendulum(Particle):
         delta_y = self.length * np.sin(self.angle - sp.pi/2)
         x = delta_x + self.origin_point[0]                  
         y = delta_y + self.origin_point[1]          #Takes into account origin point of pendulum with respect to rest of system.
+        if y < (10. * 10. ** -10) and y > -(10. * 10. ** -10):
+            y = 0
+        if x < (10. * 10. ** -10) and x > -(10. * 10. ** -10):
+            x = 0
         return x , y
 
     def delta_values(self):
@@ -63,7 +75,7 @@ class Pendulum(Particle):
         delta_y = self.position[1] - self.origin_point[1]
         return delta_x, delta_y
 
-    def update(self, deltaT, update_method, n_pendulums, P, mass, vel, l, ang):
+    def update(self, deltaT, update_method, n_pendulums, P, mass, vel, l, ang, flip):
         '''
         This method controls how the system changes per time-step (deltaT)
 
@@ -82,14 +94,22 @@ class Pendulum(Particle):
             self.update_RK(deltaT, n_pendulums, P, mass, vel, l, ang)
         
         self.tot_energy, self.kin_energy, self.pot_energy = self.calculate_E()      #Calls a fucntion to calculate total, potential and kinetic energy.
-        
-        if self.angle> sp.pi:
-            self.angle -= 2* sp.pi              #Ensures: -pi < angle < pi
-        elif self.angle < -sp.pi:
-            self.angle += 2* sp.pi
+        self.flipped , self.angle = self.check_flip()
 
         x,y = self.pol_to_cart()                                #Updates the object's position in cartesian coordinates
         self.position = np.array([x,y,0.], dtype = float)
+        
+
+    def check_flip(self):
+        angle = self.angle
+        if angle > sp.pi:
+            angle -= 2* sp.pi              #Ensures: -pi < angle < pi
+            return  'yes', angle
+        elif angle < -sp.pi:
+            angle += 2* sp.pi
+            return 'yes', angle
+        else:
+            return 'no', angle
 
     def calculate_E(self):
         '''
@@ -100,7 +120,7 @@ class Pendulum(Particle):
         E = KE + PE
         return E, KE, PE
 
-    def damped_sho(self, angle, ang_velocity):   
+    def damped_sho(self):   
         '''
         This function determines the acceleration of a single pendulum (including damping if present)
         '''
@@ -108,7 +128,7 @@ class Pendulum(Particle):
             f = 1
         else:               #Used to make damping oppose the direction of motion
             f = -1
-        ang_acceleration = ( (- 9.81 / (self.length)) * np.sin(angle)  ) - f * self.damping_factor *self.length * np.linalg.norm(ang_velocity) 
+        ang_acceleration = ( (- 9.81 / (self.length)) * np.sin(self.angle)  ) - f * self.damping_factor *self.length * np.linalg.norm(self.ang_velocity) 
         return ang_acceleration
 
     def update_euler(self, deltaT, n_pendulums, P, mass, vel, l, ang):
@@ -192,8 +212,8 @@ class Pendulum(Particle):
         '''
         if n_pendulums == 2:    
             ang_acc = self.double_pendulum_acc(angle, ang_velocity, P, mass, vel, l, ang)
-        else:
-            ang_acc = self.damped_sho(angle, ang_velocity)
+        elif n_pendulums == 1:
+            ang_acc = self.damped_sho() # angle, ang_velocity)
         return ang_acc
 
     def double_pendulum_acc(self,angx,ang_vel, P, mass, vel, l, ang):
@@ -207,7 +227,7 @@ class Pendulum(Particle):
 
         if P == 'T':
             #Calculate numerator terms
-            num1 = -g*(2.*self.mass + mass)*np.sin(self.angle)
+            num1 = -g*(2.*self.mass + mass)*np.sin(angx)
             num2 = -mass*g*np.sin(angx - 2.*ang)
             num3 = -2.*mass*np.sin(angx - ang)
             num4 = (vel**2. * l) + (  (ang_vel[2])**2. *self.length * np.cos(angx - ang)  )
