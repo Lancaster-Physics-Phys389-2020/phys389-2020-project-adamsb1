@@ -7,13 +7,13 @@ import copy
 
 class DoublePendulum(Pendulum):
     '''
-    This class runs the simulation by calling a number of subroutines, save the data, and outputs it to a storage file.
-    Given a list of data, it creates an instance of the pendulum object. 
+    This class runs the simulation by calling a number of subroutines, and returns the data necessary for analysis to take place.
+    Given a list of data, it creates instance(s) of the pendulum object. 
     If there are two data sets, then two pendulum objects are created.
 
-    Updating the system at each time-step is done by calling fucntions from the pendulum objects.
+    Updating the system at each time-step is done by calling functions from the pendulum objects.
 
-    Either saves energy data as a .csv file via pandas or returns time-to-flip data.
+    Either returns position, and energy data or returns time-to-flip data.
 
     '''
     def __init__(self, listofobjects):
@@ -33,10 +33,10 @@ class DoublePendulum(Pendulum):
     def run_simulation(self,duration,deltaT,method, time_analysis):
         '''
         This method controls the simulation.
-        Using the time-step (deltaT) to update the system throught he duration of the system (duration), using the update method (method) specified.
-        Either saves energy data via pandas or returns time-to-flip data.
+        Using the time-step (deltaT) to update the system throught the duration of the system (duration), using the update method (method) specified.
+        Returns simulation data ready for analysis.
 
-        total_data(1/2)  -  Stores all the data collected from the system whilst its running.
+        total_data(1/2)  -  Stores all the data collected from the system whilst it's running.
         time - running count of time (number of time-steps completed)
         '''
         
@@ -44,37 +44,15 @@ class DoublePendulum(Pendulum):
         total_data2 = []
         time = 0
         n_pendulums = len(self.pendulums)       #Value is frequently used: states whether the system has one or two pendulums.
-        #print(len(self.pendulums))
         while time < duration:
-            print(time)
-            flip = ''
-            P = ''
-            mass = 0.0
-            vel = np.array([0.0,0.0,0.0], dtype = float)    #Sets initial data types for variables used in update methods.
-            l = 0.0
-            ang = 0.0
-            if n_pendulums > 1:         #Double pendulum system
-                for i in range(0, n_pendulums):
-                   
-                    if i == 0:          #Determines the values of the extra data required for the 'top pendulum'
-                        self.pendulums[1].origin_point = self.pendulums[0].position
-                        P = 'T'
-                        mass = self.pendulums[1].mass
-                        vel = self.pendulums[1].ang_velocity[2]
-                        l = self.pendulums[1].length
-                        ang = self.pendulums[1].angle
-                
-                    elif i == 1:        #Determines the values of the extra data required for the 'bottom pendulum'
-                        P = 'B'
-                        mass = self.pendulums[0].mass
-                        vel = self.pendulums[0].ang_velocity[2]
-                        l = self.pendulums[0].length
-                        ang = self.pendulums[0].angle
-                    self.pendulums[i].update(deltaT,method, n_pendulums, P, mass, vel, l, ang, flip)  #Updates the Pendulum object's data
-            else:   #Single Pendulum system
-                self.pendulums[0].update(deltaT,method, n_pendulums, P, mass, vel, l, ang, flip)
+            flip = '' #Stops 'referenced before defined' error
+            if n_pendulums > 1:
+                self.pendulums[1].origin_point = self.pendulums[0].position     #If there are two pendulums, updates the orgin-point of the lower pendulum at each time-step
+            pendulum_positions = self.call_update(n_pendulums, deltaT, method, flip)    #Calls the function used to update the system.
+            for i in range(0,n_pendulums):
+                    self.pendulums[i].position = pendulum_positions[i]      #Saves new data to each pendulum object.
             pendulums_data = copy.deepcopy(self.pendulums)  #Creates a copy of all the system data without deleting the original data in 'self.pendulums'
-           
+        
 
             if (time//(deltaT*1000))%1 == 0 or time == 0:   #Reduces amount of data collected (by factor of 10) without reducing accuracy of data.
                 #Saves the system data into two lists: total_data1 and total_data2
@@ -88,33 +66,57 @@ class DoublePendulum(Pendulum):
                     i+=1
 
             time_to_flip = 0.0
-            if time_analysis == 'Y':            #If time-to-flip analysis is taking place, and pendulum has flipped. Returns the time it took before the pednulum flipped (breaks out of the loop).
+            if time_analysis == 'Y':            #If time-to-flip analysis is taking place, and pendulum has flipped, breaks out of the loop to output the data..
                 for i in range(0, n_pendulums):
                     if self.pendulums[i].flipped == 'yes': 
                         time_to_flip = time
-                        if time_to_flip > 0:
-                            return time_to_flip
-                        else:
-                            return 'no flip'
-
-
+                if time_to_flip > 0:
+                    break
 
             time+=deltaT # Advances to the next time-step
-        
-        #Saves the data to an external .csv file using Pandas, when energy is being investigated
 
-        #Returns the time it took for the pendulum to flip (When time-to-flip being analysed).
-
+        output_data = []
         if time_analysis == 'N':
-            df = pd.DataFrame(data = total_data1, columns = ['mass','position','velocity','acceleration','angle','length','angular_velocity','angular_acceleration', 'time', 'tot_energy', 'kin_energy', 'pot_energy', 'damping_factor'])
-            df.to_pickle('Pendulum_testing_06_04.csv')
-            if n_pendulums > 1:
-                df = pd.DataFrame(data = total_data2, columns = ['mass','position','velocity','acceleration','angle','length','angular_velocity','angular_acceleration', 'time', 'tot_energy', 'kin_energy', 'pot_energy', 'damping_factor'])
-                df.to_pickle('Pendulum_testing2_06_04.csv')
+            output_data.append( total_data1)
+            if n_pendulums > 1:                         #Outputs the necessary data ( based on which type of analysis is taking place) from the simulation to allow analysis.
+                output_data.append( total_data2)
+        elif time_analysis == 'Y':
+            output_data.append(time_to_flip)
+        return output_data
         
-        
+    def second_pendulum_data(self, i):
+        '''
+        This function obtains all the data (not contained in the pendulum object) used to calculate acceleration in the double pendulum case.
+        i.e. if the acceleration of the 'bottom' pendulum is being calculated, this function obtains data from the 'top' pendulum.
+        '''
+        if i == 1:
+            P = 'B'
+            j = 0
+        elif i == 0:
+            P = 'T'
+            j = 1
+        mass = self.pendulums[j].mass
+        vel = self.pendulums[j].ang_velocity[2]
+        l = self.pendulums[j].length
+        ang = self.pendulums[j].angle
+        return mass, vel, l, ang, P      #Returns mass, angular velocity, length, angle and position (top/bottom) of the other pendulum.
 
-
-
-
-
+    def call_update(self, n_pendulums, deltaT, method, flip):
+        '''
+        This function calls the update fucntions (in Pendulum2.py), to update the pendulum's properties.
+        Outputs the new positions.
+        '''
+        pendulums_new_positions = []
+        P = ''
+        mass = 0.0
+        vel = np.array([0.0,0.0,0.0], dtype = float)    #Sets initial data types for variables used in update methods.
+        l = 0.0
+        ang = 0.0
+        if n_pendulums > 1:         #Double pendulum system
+            for i in range(0, n_pendulums):
+                mass, vel, l, ang, P = self.second_pendulum_data(i)    #Determines the values of the extra data required for the 'other' pendulum.
+                pendulums_new_positions.append(self.pendulums[i].update(deltaT,method, n_pendulums, P, mass, vel, l, ang, flip) ) #Updates the Pendulum object's data, saving the new position.
+        else:   
+            pendulums_new_positions.append( self.pendulums[0].update(deltaT,method, n_pendulums, P, mass, vel, l, ang, flip) )
+        return pendulums_new_positions
+           

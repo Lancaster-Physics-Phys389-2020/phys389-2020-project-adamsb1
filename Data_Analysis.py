@@ -192,7 +192,3 @@ plt.legend(prop = {'size':14})
 plt.savefig('RK_energy_damped_compare3.pdf')
 plt.close()
 ##############
-
-
-
-

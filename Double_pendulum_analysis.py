@@ -1,8 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
-import matplotlib.animation as animation
-from mpl_toolkits.mplot3d import Axes3D
 import scipy as sp
 '''
 This file creates all the analysis plots for the double pendulum system.

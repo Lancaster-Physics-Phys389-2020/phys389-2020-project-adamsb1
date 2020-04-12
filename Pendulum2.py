@@ -77,30 +77,35 @@ class Pendulum(Particle):
 
     def update(self, deltaT, update_method, n_pendulums, P, mass, vel, l, ang, flip):
         '''
-        This method controls how the system changes per time-step (deltaT)
+        This function controls how the system changes per time-step (deltaT)
 
         update_method - holds an integer which referes to which update method is being used
         n_pendulums - an integer which refers to the number of pendulums the system is simulating (either 1 or 2)
         P - holds a string (either 'T' or 'B'), used to determine which pendulum is being updated (for use in double pendulum)
         mass, vel, l, ang - values of pendulum not being analysed, which are needed to calculate the acceleration of the pendulum in question (used in double pendulum case)
+        
+        Outputs the updated position of the pendulum
         '''
         if update_method == 1:
-            self.update_euler(deltaT, n_pendulums, P, mass, vel, l, ang)
+            self.ang_acceleration[2] , self.angle, self.ang_velocity[2] =  self.update_euler(deltaT, n_pendulums, P, mass, vel, l, ang) #Calls funtions to update the pendulum object's properties.
         elif update_method == 2:
-            self.update_cromer(deltaT, n_pendulums, P, mass, vel, l, ang)
+            self.ang_acceleration[2] , self.angle, self.ang_velocity[2] = self.update_cromer(deltaT, n_pendulums, P, mass, vel, l, ang)
         elif update_method == 3:                                                        #Call and run relevant update method
-            self.update_richardson(deltaT, n_pendulums, P, mass, vel, l, ang)
+            self.ang_acceleration[2] , self.angle, self.ang_velocity[2] = self.update_richardson(deltaT, n_pendulums, P, mass, vel, l, ang)
         elif update_method == 4:
-            self.update_RK(deltaT, n_pendulums, P, mass, vel, l, ang)
+            self.ang_acceleration[2] , self.angle, self.ang_velocity[2] = self.update_RK(deltaT, n_pendulums, P, mass, vel, l, ang)
         
         self.tot_energy, self.kin_energy, self.pot_energy = self.calculate_E()      #Calls a fucntion to calculate total, potential and kinetic energy.
         self.flipped , self.angle = self.check_flip()
 
-        x,y = self.pol_to_cart()                                #Updates the object's position in cartesian coordinates
-        self.position = np.array([x,y,0.], dtype = float)
-        
+        x,y = self.pol_to_cart()                                #Converts position to cartesian coordinates
+        return np.array([x,y,0], dtype = float) #Returns the new position of the pendulum object.
 
     def check_flip(self):
+        '''
+        This function determines whether the pendulum object has completed a 'flip'.
+        If it has, it returns the new angle and 'yes'
+        '''
         angle = self.angle
         if angle > sp.pi:
             angle -= 2* sp.pi              #Ensures: -pi < angle < pi
@@ -135,42 +140,52 @@ class Pendulum(Particle):
         '''
         Updates the angular velocity, angular acceleration and angle of the object using the Euler algorithm.
         The angular acceleration is updated first then angle and angular velocity.
+        Returns the new angular acceleration, angle and angular velocity.
         '''
-        self.ang_acceleration[2] = self.determine_acc_method(self.angle, self.ang_velocity, n_pendulums, P, mass, vel, l, ang)
-        self.angle += self.ang_velocity[2] * deltaT
-        self.ang_velocity[2] += self.ang_acceleration[2] * deltaT
+        new_acc = self.determine_acc_method(self.angle, self.ang_velocity, n_pendulums, P, mass, vel, l, ang)
+        new_ang =self.angle + (self.ang_velocity[2] * deltaT)
+        new_vel = self.ang_velocity[2] + (new_acc * deltaT)
+        return new_acc, new_ang, new_vel
         
     def update_cromer(self, deltaT, n_pendulums, P, mass, vel, l, ang):
         '''
         Updates the angular velocity, angular acceleration and angle of the object using the Euler-Cromer algorithm.
         The angular acceleration is updated first then angular velocity. 
         The new angular velocity is used to update the angle.
+        Returns the new angular acceleration, angle and angular velocity.
         '''
-        self.ang_acceleration[2] = self.determine_acc_method(self.angle, self.ang_velocity, n_pendulums, P, mass, vel, l, ang)
-        self.ang_velocity[2] += self.ang_acceleration[2] * deltaT
-        self.angle += self.ang_velocity[2] * deltaT
+        new_acc = self.determine_acc_method(self.angle, self.ang_velocity, n_pendulums, P, mass, vel, l, ang)
+        new_vel = self.ang_velocity[2] + new_acc * deltaT
+        new_ang = self.angle + new_vel * deltaT
+        return new_acc, new_ang, new_vel
 
     def update_richardson(self, deltaT, n_pendulums, P, mass, vel, l, ang):
         '''
         Updates the angular velocity, angular acceleration and angle of the object using the Euler-Richardson algorithm.
         The angle, angular velocity and angular acceleration are calculated for half of the time-step.
-        Using the half-time-step data, the final angle, angular velocity and angular acceleration is calculated
+        Using the half-time-step data, the final angle, angular velocity and angular acceleration is calculated.
+        Returns the new angular acceleration, angle and angular velocity.
         '''
+        current_acc = self.determine_acc_method(self.angle, self.ang_velocity, n_pendulums, P, mass, vel, l, ang)
         #Find half-time-step values
         angle_mid = self.angle + self.ang_velocity[2] * (deltaT/2.0)
-        ang_velocity_mid =self.ang_velocity[2] + self.ang_acceleration[2] * (deltaT/2.0)
-        ang_acceleration_mid = self.determine_acc_method(angle_mid, ang_velocity_mid, n_pendulums, P, mass, vel, l, ang)
+        ang_velocity_mid = self.ang_velocity[2] + current_acc * (deltaT/2.0)
+        ang_vel_mid_vector = np.array([0.0,0.0, ang_velocity_mid])
+        ang_acceleration_mid = self.determine_acc_method(angle_mid, ang_vel_mid_vector, n_pendulums, P, mass, vel, l, ang)
         
         #Using half-time-step values to calculate end point values
-        self.ang_acceleration[2] = self.determine_acc_method(self.angle, self.ang_velocity, n_pendulums, P, mass, vel, l, ang)
-        self.angle += ang_velocity_mid * deltaT
-        self.ang_velocity[2] += ang_acceleration_mid * deltaT
+        new_acc = self.determine_acc_method(self.angle, self.ang_velocity, n_pendulums, P, mass, vel, l, ang)
+        new_ang = self.angle + ang_velocity_mid * deltaT
+        new_vel = self.ang_velocity[2] + ang_acceleration_mid * deltaT
+
+        return new_acc, new_ang, new_vel
 
     def update_RK(self, deltaT, n_pendulums, P, mass, vel, l, ang):
         '''
         Updates the angular velocity, angular acceleration and angle of the object using the Runge-Kutta algorithm.
+        Returns the new angular acceleration, angle and angular velocity.
         '''
-        self.ang_acceleration[2] = self.determine_acc_method(self.angle, self.ang_velocity, n_pendulums, P, mass, vel, l, ang)
+        current_acc = self.determine_acc_method(self.angle, self.ang_velocity, n_pendulums, P, mass, vel, l, ang)
 
         #Used to store the k-values to be averaged later
         k_a = [0.,0.,0.,0.]        #Position values
@@ -178,7 +193,7 @@ class Pendulum(Particle):
 
         #Initial values
         k_a[0] = self.ang_velocity[2] * deltaT
-        k_b[0] = (self.ang_acceleration[2] ) *deltaT
+        k_b[0] = (current_acc ) *deltaT
 
         #First half-time-step
         k_a[1] = (self.ang_velocity[2] + (k_b[0]/2.)) * deltaT
@@ -202,9 +217,11 @@ class Pendulum(Particle):
         k_b[3] = acc *deltaT
 
         #Resulting values using averages for angular velocity and angle
-        self.ang_velocity[2] += ((k_b[0] + 2*k_b[1] + 2*k_b[2] + k_b[3])/6.)
-        self.angle +=  ((k_a[0] + 2*k_a[1] + 2*k_a[2] + k_a[3])/6.)
-        self.ang_acceleration[2] = self.determine_acc_method(self.angle, self.ang_velocity, n_pendulums, P, mass, vel, l, ang)
+        new_vel = self.ang_velocity[2] + ((k_b[0] + 2*k_b[1] + 2*k_b[2] + k_b[3])/6.)
+        new_ang = self.angle +  ((k_a[0] + 2*k_a[1] + 2*k_a[2] + k_a[3])/6.)
+        new_acc =  self.determine_acc_method(self.angle, self.ang_velocity, n_pendulums, P, mass, vel, l, ang)
+
+        return new_acc, new_ang, new_vel
 
     def determine_acc_method(self, angle, ang_velocity, n_pendulums, P, mass, vel, l, ang):
         '''
@@ -246,14 +263,3 @@ class Pendulum(Particle):
             den = self.length * (2. * mass + self.mass - self.mass * np.cos( 2.*ang - 2.*angx))
             acc = num/den
         return acc
-
-    
-
-
-
-
-
-
-
-
-
